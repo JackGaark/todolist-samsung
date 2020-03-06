@@ -1,93 +1,76 @@
-import React, { useState } from "react";
-import "./App.css";
+import React, { useState, Fragment } from "react";
+import AddUserForm from "./forms/AddUserForm";
+import EditUserForm from "./forms/EditUserForm";
+import UserTable from "./tables/UserTable";
 
-function Todo({ todo, index, completeTodo, removeTodo }) {
+const App = () => {
+  // Data
+  const usersData = [
+    { id: 1, name: "Tania", username: "floppydiskette" },
+    { id: 2, name: "Craig", username: "siliconeidolon" },
+    { id: 3, name: "Ben", username: "benisphere" }
+  ];
+
+  const initialFormState = { id: null, name: "", username: "" };
+
+  // Setting state
+  const [users, setUsers] = useState(usersData);
+  const [currentUser, setCurrentUser] = useState(initialFormState);
+  const [editing, setEditing] = useState(false);
+
+  // CRUD operations
+  const addUser = user => {
+    user.id = users.length + 1;
+    setUsers([...users, user]);
+  };
+
+  const deleteUser = id => {
+    setEditing(false);
+
+    setUsers(users.filter(user => user.id !== id));
+  };
+
+  const updateUser = (id, updatedUser) => {
+    setEditing(false);
+
+    setUsers(users.map(user => (user.id === id ? updatedUser : user)));
+  };
+
+  const editRow = user => {
+    setEditing(true);
+
+    setCurrentUser({ id: user.id, name: user.name, username: user.username });
+  };
+
   return (
-    <div
-      className="todo"
-      style={{ textDecoration: todo.isCompleted ? "line-through" : "" }}
-    >
-      {todo.text}
-
-      <div>
-        <button onClick={() => completeTodo(index)}>Complete</button>
-        <button onClick={() => removeTodo(index)}>x</button>
+    <div className="container">
+      <h1>CRUD App with Hooks</h1>
+      <div className="flex-row">
+        <div className="flex-large">
+          {editing ? (
+            <Fragment>
+              <h2>Edit user</h2>
+              <EditUserForm
+                editing={editing}
+                setEditing={setEditing}
+                currentUser={currentUser}
+                updateUser={updateUser}
+              />
+            </Fragment>
+          ) : (
+            <Fragment>
+              <h2>Add user</h2>
+              <AddUserForm addUser={addUser} />
+            </Fragment>
+          )}
+        </div>
+        <div className="flex-large">
+          <h2>View users</h2>
+          <UserTable users={users} editRow={editRow} deleteUser={deleteUser} />
+        </div>
       </div>
     </div>
   );
-}
-
-function TodoForm({ addTodo }) {
-  const [value, setValue] = useState("");
-
-  const handleSubmit = e => {
-    e.preventDefault();
-    if (!value) return;
-    addTodo(value);
-    setValue("");
-  };
-
-  return (
-    <form onSubmit={handleSubmit}>
-      <input
-        type="text"
-        className="input"
-        value={value}
-        onChange={e => setValue(e.target.value)}
-      />
-    </form>
-  );
-}
-
-function App() {
-  const [todos, setTodos] = useState([
-    {
-      text: "Learn about React",
-      isCompleted: false
-    },
-    {
-      text: "Meet friend for lunch",
-      isCompleted: false
-    },
-    {
-      text: "Build really cool todo app",
-      isCompleted: false
-    }
-  ]);
-
-  const addTodo = text => {
-    const newTodos = [...todos, { text }];
-    setTodos(newTodos);
-  };
-
-  const completeTodo = index => {
-    const newTodos = [...todos];
-    newTodos[index].isCompleted = true;
-    setTodos(newTodos);
-  };
-
-  const removeTodo = index => {
-    const newTodos = [...todos];
-    newTodos.splice(index, 1);
-    setTodos(newTodos);
-  };
-
-  return (
-    <div className="app">
-      <div className="todo-list">
-        {todos.map((todo, index) => (
-          <Todo
-            key={index}
-            index={index}
-            todo={todo}
-            completeTodo={completeTodo}
-            removeTodo={removeTodo}
-          />
-        ))}
-        <TodoForm addTodo={addTodo} />
-      </div>
-    </div>
-  );
-}
+};
 
 export default App;
